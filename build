@@ -1,0 +1,35 @@
+#!/bin/bash
+#clang --target=wasm32 --no-standard-libraries -Wl,--export-all -Wl,--no-entry -o add.wasm add.c
+clang \
+	-DMATH_EXTERNALLY_DEFINED \
+	-DBUILD_TARGET_WEB \
+	-Ithird_party/SDL2-2.30.3/include \
+	-std=c11 \
+	-O2 \
+	-nostdlib \
+	-nostartfiles \
+	-fno-builtin \
+	-ffreestanding \
+	-nostdinc \
+	-Ithird_party/include \
+	-I/home/user/git/ulibc \
+	--target=wasm32 \
+	--no-standard-libraries \
+	-Wl,--export-all \
+	-Wl,--no-entry \
+	-Wl,--import-memory \
+	-Wl,--allow-undefined \
+	-Wl,-export=__wasm_call_ctors \
+	-Wl,-export=malloc \
+	-Wl,-export=free \
+	-Wl,-export=main \
+	-Wl,-strip-all \
+	-Wl,-gc-sections \
+	-fvisibility=hidden \
+	-fno-builtin \
+	-fno-exceptions \
+	-fno-threadsafe-statics \
+	-fno-rtti \
+	-Wno-writable-strings \
+	-Wno-unknown-pragmas \
+	-o main.wasm window.c main.c sdl.c

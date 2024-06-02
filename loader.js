@@ -911,6 +911,23 @@ var env =
 	},
 
 	// Functions querying the system time
+	exit: function(status)
+	{
+		console.log("Exiting!");
+	},
+	read: function(fd, buf, n)
+	{
+		console.log("read: ", fd, buf, n);
+	},
+	write: function(fd, buf, n)
+	{
+		// console.log("write: ", fd, buf, n);
+		if(fd == 1)
+		{
+			if(buf)
+				console.log(ReadHeapString(buf));
+		}
+	},
 	time: function(ptr) { var ret = (Date.now()/1000)|0; if (ptr) HEAPU32[ptr>>2] = ret; return ret; },
 	gettimeofday: function(ptr) { var now = Date.now(); HEAPU32[ptr>>2]=(now/1000)|0; HEAPU32[(ptr+4)>>2]=((now % 1000)*1000)|0; },
 

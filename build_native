@@ -1,0 +1,30 @@
+#!/bin/bash
+# clang \
+# 	-Ithird_party/include \
+# 	-std=c11 \
+# 	-O2 \
+# 	-fvisibility=hidden \
+# 	-fno-exceptions \
+# 	-fno-threadsafe-statics \
+# 	-fno-rtti \
+# 	-Wno-writable-strings \
+# 	-Wno-unknown-pragmas \
+# 	-Wl,-lGL \
+# 	-Wl,-lm \
+# 	-Wl,-lSDL2 \
+# 	-o main main.c window.c third_party/src/glad.c
+clang \
+	-Ithird_party/include \
+	-std=c11 \
+	-O0 \
+	-ggdb3 \
+	-g \
+	-fno-exceptions \
+	-fno-threadsafe-statics \
+	-fno-rtti \
+	-Wno-writable-strings \
+	-Wno-unknown-pragmas \
+	-Wl,-lGL \
+	-Wl,-lm \
+	-Wl,-lSDL2 \
+	-o main main.c window.c third_party/src/glad.c

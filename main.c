@@ -1,38 +1,35 @@
-/*
-This is free and unencumbered software released into the public domain.
-
-Anyone is free to copy, modify, publish, use, compile, sell, or
-distribute this software, either in source code form or as a compiled
-binary, for any purpose, commercial or non-commercial, and by any
-means.
-
-In jurisdictions that recognize copyright laws, the author or authors
-of this software dedicate any and all copyright interest in the
-software to the public domain. We make this dedication for the benefit
-of the public at large and to the detriment of our heirs and
-successors. We intend this dedication to be an overt act of
-relinquishment in perpetuity of all present and future rights to this
-software under copyright law.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
-OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-OTHER DEALINGS IN THE SOFTWARE.
-
-For more information, please refer to <http://unlicense.org/>
-*/
-
-#define GL_GLEXT_PROTOTYPES
-#define EGL_EGLEXT_PROTOTYPES
-#include <GL/gl.h>
+#include "opengl.h"
+#include <sys/types.h>
+#include <stddef.h>
+#include <stdio.h>
+#include <stdbool.h>
 #include <math.h>
+#ifdef BUILD_TARGET_WEB
+	#include <start.h>
+#endif
+#include "window.h"
 
+unsigned int ticks()
+{
+	return SDL_GetTicks();
+}
+
+#ifdef BUILD_TARGET_WEB
 // Functions defined in loader.js
-extern "C" void WAJS_SetupCanvas(int width, int height);
-extern "C" unsigned int WAJS_GetTime();
+void WAJS_SetupCanvas(int width, int height);
+unsigned int WAJS_GetTime();
+#else
+SDL_Window *wnd;
+void WAJS_SetupCanvas(int width, int height)
+{
+	wnd = create_window();
+}
+unsigned int WAJS_GetTime()
+{
+	return SDL_GetTicks();
+}
+
+#endif
 
 static const char* vertex_shader_text =
 	"precision lowp float;"
@@ -61,6 +58,7 @@ static GLint uMVP_location, aPos_location, aCol_location;
 // This function is called at startup
 int main(int argc, char *argv[])
 {
+	printf("yooo yo yo\n");
 	WAJS_SetupCanvas(640, 480);
 	glViewport(0, 0, 640, 480);
 
@@ -89,11 +87,31 @@ int main(int argc, char *argv[])
 	glEnableVertexAttribArray(aCol_location);
 	glVertexAttribPointer(aCol_location, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(sizeof(float) * 2));
 
+#ifndef BUILD_TARGET_WEB
+
+	unsigned int last_frame_time = ticks();
+	bool quit = false;
+	while(!quit)
+	{
+		unsigned int now = ticks();
+		unsigned int delta_time = now - last_frame_time;
+		if(delta_time > 0)
+		{
+			float dt = (float)delta_time / 1000.f;
+			/* main_loop_update(dt); */
+			void WAFNDraw();
+			WAFNDraw();
+		}
+		last_frame_time = now;
+	}
+#else
+	/* emscripten_set_main_loop(main_loop_update, 0, 1); */
+#endif
 	return 0;
 }
 
 // This function is called by loader.js every frame
-extern "C" void WAFNDraw()
+void WAFNDraw()
 {
 	float f = ((WAJS_GetTime() % 1000) / 1000.0f);
 
@@ -114,4 +132,5 @@ extern "C" void WAFNDraw()
 	glUseProgram(program);
 	glUniformMatrix4fv(uMVP_location, 1, GL_FALSE, mvp);
 	glDrawArrays(GL_TRIANGLES, 0, 3);
+	swap_window();
 }
